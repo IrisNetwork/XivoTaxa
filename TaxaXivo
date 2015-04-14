@@ -1,0 +1,93 @@
+#!/bin/zsh
+#
+# Pré-requis
+# aptitude install postgresql-9.1-prefix
+#
+# psql asterisk
+# ALTER TABLE call_log ADD valo NUMERIC(4, 2);
+# CREATE EXTENSION prefix;
+#
+# CREATE TABLE ovh_perso (
+#   area prefix_range primary key,
+#   cost1 NUMERIC(6, 2),
+#   interval1 smallint DEFAULT '1',
+#   duration1 smallint DEFAULT '32767',
+#   cost2 NUMERIC(6, 2),
+#   interval2 smallint,
+#   duration2 smallint,
+#   cost3 NUMERIC(6, 2),
+#   interval3 smallint,
+#   duration3 smallint
+# );
+#
+# CREATE INDEX idx_prefix ON ovh_perso USING gist(prefix);
+#
+
+zmodload zsh/mapfile zsh/mathfunc
+
+readonly FileTemp=/tmp/ListeAppelsNonTaxa
+CostId=1
+Cost=0
+CallLength=0
+
+GetTaxaInfo () {
+    # $1 numéro
+    # $2 le champ à retourner
+    psql -A -t asterisk -c "\
+        SELECT ${2}
+            from ${Chan}
+            where area @> '${1}'
+            order by area
+            asc
+            limit 1;
+    "
+}
+
+# On récupère la liste des comm non taxées
+## -A avoir le format unaligned (ie Valeur1|Valeur2 et non Valeur1   |    Valeur2)
+## -t ne pas afficher les en-têtes
+## le ceil est là pour arrondir à la seconde supérieure
+psql -A -t asterisk -c "\
+    SELECT id,destination_exten,destination_line_identity,ceil(EXTRACT(EPOCH FROM duration))
+        from call_log
+        where valo is null
+            AND destination_exten like '0%'
+            AND answered = 't'
+            AND source_exten NOT like '0%'
+            AND source_exten != 'anonymous'
+            and destination_line_identity != 'sip/freephonie' and id = '313' limit 4;
+    " > ${FileTemp}
+
+FLINES=( ${(f)mapfile[${FileTemp}]} )
+for ITEM in $FLINES
+do
+    Id=${ITEM[(ws:|:)1]}
+    Dest=${ITEM[(ws:|:)2]:1}
+    Chan=${ITEM[(ws:|:)3]:4}
+    Duration=${ITEM[(ws:|:)4]}
+
+    CallLength=${Duration}
+    Cost=0
+    CostId=1
+    while [ ${CallLength} -ne 0 ] ; do
+        if [ ${CallLength} -gt $(GetTaxaInfo ${Dest} duration${CostId}) ] ; then
+            ValoLength=$(GetTaxaInfo ${Dest} duration${CostId})
+            echo too long
+        else
+            ValoLength=${CallLength}
+            echo ok
+        fi
+
+        # Calcul du cout
+        Cost=$(($Cost+($(GetTaxaInfo ${Dest} cost${CostId})/$(GetTaxaInfo ${Dest} interval${CostId})*${ValoLength})))
+        echo temp cout $Cost
+        # refaire le calcul ici
+        CallLength=$((${CallLength}-${ValoLength}))
+        CostId=$((${CostId}+1))
+    done
+    echo cout ${Cost}
+    psql -q -A -t asterisk -c "\
+        update call_log
+            SET valo = '${Cost}' where id = '${Id}';
+    "
+done
