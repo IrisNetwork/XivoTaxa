@@ -72,16 +72,12 @@ do
     while [ ${CallLength} -ne 0 ] ; do
         if [ ${CallLength} -gt $(GetTaxaInfo ${Dest} duration${CostId}) ] ; then
             ValoLength=$(GetTaxaInfo ${Dest} duration${CostId})
-            echo too long
         else
             ValoLength=${CallLength}
-            echo ok
         fi
 
-        # Calcul du cout
+        # Calcul du coût
         Cost=$(($Cost+($(GetTaxaInfo ${Dest} cost${CostId})/$(GetTaxaInfo ${Dest} interval${CostId})*${ValoLength})))
-        echo temp cout $Cost
-        # refaire le calcul ici
         CallLength=$((${CallLength}-${ValoLength}))
         CostId=$((${CostId}+1))
     done
