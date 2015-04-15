@@ -54,8 +54,7 @@ psql -A -t asterisk -c "\
             AND destination_exten like '0%'
             AND answered = 't'
             AND source_exten NOT like '0%'
-            AND source_exten != 'anonymous'
-            and destination_line_identity != 'sip/freephonie' and id = '313' limit 4;
+            AND source_exten != 'anonymous';
     " > ${FileTemp}
 
 FLINES=( ${(f)mapfile[${FileTemp}]} )
