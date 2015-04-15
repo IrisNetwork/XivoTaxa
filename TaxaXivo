@@ -4,7 +4,7 @@
 # aptitude install postgresql-9.1-prefix
 #
 # psql asterisk
-# ALTER TABLE call_log ADD valo NUMERIC(4, 2);
+# ALTER TABLE call_log ADD valo NUMERIC(6, 2);
 # CREATE EXTENSION prefix;
 #
 # CREATE TABLE ovh_perso (
