@@ -17,9 +17,9 @@ Graphique :
         * /mois
         * /an
 
-* Stats
-    * top 10
-        * nbres appels
-        * coûts appels
+Stats
+* top 10
+  * nbres appels
+  * coûts appels
 
-* Génération mensuelle des factures
+Génération mensuelle des factures pdf et envoi par mail
