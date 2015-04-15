@@ -80,7 +80,6 @@ do
         CallLength=$((${CallLength}-${ValoLength}))
         CostId=$((${CostId}+1))
     done
-    echo cout ${Cost}
     psql -q -A -t asterisk -c "\
         update call_log
             SET valo = '${Cost}' where id = '${Id}';
