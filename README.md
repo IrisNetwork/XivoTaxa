@@ -18,8 +18,15 @@ Graphique :
         * /an
 
 Stats
-* top 10
-  * nbres appels
-  * coûts appels
+* top 5/10/15
+   * durée des appels
+      * d'un utilisateur en particulier
+      * général
+   * coûts des appels
+      * d'un utilisateur en particulier
+      * général
+   * appelant
+      * Nombre
+      * Durée
 
 Génération mensuelle des factures pdf et envoi par mail
