@@ -4,11 +4,11 @@ Solution de valorisation des CDRs
 # TODO
 Graphique :
 * nbre appel / user
-    entrant
+    * entrant
         * /jour
         * /mois
         * /an
-    sortant
+    * sortant
         * /jour
         * /mois
         * /an
