@@ -5,6 +5,10 @@
 #
 # psql asterisk
 # ALTER TABLE call_log ADD valo NUMERIC(6, 2);
+# ALTER TABLE call_log ADD stats smallint default 0;
+# 0 - CDR non traitée
+# 1 - CDR valorisée
+# 2 - CDR mise dans ES
 # CREATE EXTENSION prefix;
 #
 # CREATE TABLE ovh_perso (
@@ -35,11 +39,11 @@ GetTaxaInfo () {
     # $2 le champ à retourner
     psql -A -t asterisk -c "\
         SELECT ${2}
-            from ${Chan}
-            where area @> '${1}'
-            order by area
-            asc
-            limit 1;
+            FROM ${Chan}
+            WHERE area @> '${1}'
+            ORDER BY area
+            ASC
+            LIMIT 1;
     "
 }
 
@@ -47,13 +51,17 @@ GetTaxaInfo () {
 ## -A avoir le format unaligned (ie Valeur1|Valeur2 et non Valeur1   |    Valeur2)
 ## -t ne pas afficher les en-têtes
 ## le ceil est là pour arrondir à la seconde supérieure
+MaxId=$(psql -A -t asterisk -c "\
+    SELECT MAX(id)
+        FROM call_log;
+    ")
 psql -A -t asterisk -c "\
-    SELECT id,destination_exten,destination_line_identity,ceil(EXTRACT(EPOCH FROM duration))
-        from call_log
-        where valo is null
-            AND destination_exten like '0%'
+    SELECT id,destination_exten,destination_line_identity,CEIL(EXTRACT(EPOCH FROM duration)) AS duration
+        FROM call_log
+        WHERE valo IS null
+            AND destination_exten LIKE '0%'
             AND answered = 't'
-            AND source_exten NOT like '0%'
+            AND source_exten NOT LIKE '0%'
             AND source_exten != 'anonymous';
     " > ${FileTemp}
 
@@ -81,7 +89,12 @@ do
         CostId=$((${CostId}+1))
     done
     psql -q -A -t asterisk -c "\
-        update call_log
-            SET valo = '${Cost}' where id = '${Id}';
+        UPDATE call_log
+            SET valo = '${Cost}' WHERE id = '${Id}';
     "
 done
+# On marque comme traitée les taxa
+psql -q -A -t asterisk -c "\
+    UPDATE call_log
+        SET stats = 1 WHERE id <= '${MaxId}';
+"
