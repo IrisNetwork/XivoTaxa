@@ -44,3 +44,6 @@ curl -XPUT 'localhost:9200/_river/my_jdbc_river/_meta' -d '{
 
 ## La couper
 ### curl -XDELETE 'localhost:9200/_river/my_jdbc_river/'
+
+# Mise en place du cron de valorisation
+cp TaxaXivo /etc/cron.hourly/
