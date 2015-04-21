@@ -1,0 +1,175 @@
+#!/bin/zsh
+
+integer YearBegin=${1[(ws:-:)1]}
+integer MonthBegin=${1[(ws:-:)2]}
+
+
+
+# Test de l'argument
+if [ ${YearBegin} = ${MonthBegin} -o -z "${MonthBegin}" -o -z "${YearBegin}" ] ; then
+    echo "Merci de lancer la commande en spécifiant la date de début"
+    echo "par exemple : 2015-03 pour le mois de mars 2015"
+    exit 42
+fi
+
+case ${MonthBegin} in
+    1)
+        NomMois=janvier
+        ;;
+    2)
+        NomMois=février
+        ;;
+    3)
+        NomMois=mars
+        ;;
+    4)
+        NomMois=avril
+        ;;
+    5)
+        NomMois=mai
+        ;;
+    6)
+        NomMois=juin
+        ;;
+    7)
+        NomMois=juillet
+        ;;
+    8)
+        NomMois=août
+        ;;
+    9)
+        NomMois=septembre
+        ;;
+    10)
+        NomMois=octobre
+        ;;
+    11)
+        NomMois=novembre
+        ;;
+    12)
+        NomMois=décembre
+        ;;
+    *)
+        echo 12 mois dans une année aux dernières nouvelles
+        echo On m\'aurait menti \?
+        exit 42
+        ;;
+    esac
+
+zmodload zsh/mapfile zsh/mathfunc
+
+Indice=${RANDOM}
+
+readonly FileTemp=/tmp/${RANDOM}GenerateFacture
+readonly FactureTemp=/tmp/${RANDOM}Facture.html
+readonly FactureAllTrame=/usr/share/xivo-web-interface/www/factureAllTrame.html
+
+echo '<HTML><HEAD><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><TITLE>Détails des commmunications MOIS ANNEE</TITLE></HEAD><style>table { border-collapse: collapse; width: 50%; border: 1px solid #335472; } th { height: 20px; border: 1px solid white; background-color: #335472; color: white; } td { padding: 3px; border: 1px solid #335472; }</style> <BODY> <IMG SRC=logomail.png alt="logo" title="logo"> <div style="text-align:right"> Iris-Network<br/> 18, rue de la prairie<br/> 44390 Casson<br/> </div> <br/> <br/> <br/> <br/> <h1><div style="text-align:center;"><FONT color="#335472">Détail des communications MOIS ANNEE</FONT></div></h1> <h2>Coût total : COUTTOTAL€</h2> <h2>Détail</h2> <div> <table> <tr> <th>usager</th> <th>nombre appels extérieurs décrochés</th> <th>durée</th> <th>montant</th> </tr>' > ${FactureTemp}
+cp logomail.png $(dirname ${FactureTemp})
+
+###
+# Facture globale
+###
+
+# On récupère Nombre Appel, Coût, durée totale par user
+psql -A -t asterisk -c "
+    SELECT source_exten AS poste,
+        COUNT(valo) AS \"nombre d'appel\",
+        SUM(duration) AS durée,
+        SUM(valo) AS coût
+    FROM call_log
+    WHERE valo IS NOT NULL
+        AND date BETWEEN '${YearBegin}-${MonthBegin}-01' AND '${YearBegin}-${MonthBegin}-01'::date + '1 month'::interval - '1 day'::interval
+    group by source_exten;
+    " > ${FileTemp}
+
+CoutTotal=$( psql -A -t asterisk -c "
+    SELECT SUM(valo) AS coût
+    FROM call_log
+    WHERE valo IS NOT NULL
+        AND date BETWEEN '${YearBegin}-${MonthBegin}-01' AND '${YearBegin}-${MonthBegin}-01'::date + '1 month'::interval - '1 day'::interval;
+")
+
+FLINES=( ${(f)mapfile[${FileTemp}]} )
+for ITEM in $FLINES ; do
+    Poste=${ITEM[(ws:|:)1]}
+    NbAppel=${ITEM[(ws:|:)2]}
+    Duration=${ITEM[(ws:|:)3][(ws:.:)1]}
+    Cost=${ITEM[(ws:|:)4]}
+
+    # On écrit le tableau HTML
+    cat >> ${FactureTemp} << EOF
+            <tr>
+                <td>${Poste}</td>
+                <td>${NbAppel}</td>
+                <td>${Duration}</td>
+                <td>${Cost}</td>
+            </tr
+EOF
+done
+
+# On finit le tableau
+echo '</table></div></BODY></HTML>' >> ${FactureTemp}
+
+# On insere le cout total
+sed -i "s/COUTTOTAL/${CoutTotal}/g" ${FactureTemp}
+# Et le mois
+sed -i "s/ANNEE/${YearBegin}/g" ${FactureTemp}
+sed -i "s/MOIS/${NomMois}/g" ${FactureTemp}
+
+# On génère le pdf
+xhtml2pdf ${FactureTemp} ${FactureTemp/html/pdf} >/dev/null
+
+###
+# Facture par user
+###
+for User in $(psql -A -t asterisk -c "
+    SELECT DISTINCT source_exten
+    FROM call_log
+    WHERE valo IS NOT NULL
+        AND date BETWEEN '${YearBegin}-${MonthBegin}-01' AND '${YearBegin}-${MonthBegin}-01'::date + '1 month'::interval - '1 day'::interval
+    ORDER BY source_exten;
+    ") ; do
+        psql -A -t asterisk -c "
+        SELECT date,
+            destination_exten AS destination,
+            duration AS durée,
+            valo AS coût
+        FROM call_log
+        WHERE valo IS NOT NULL
+            AND date BETWEEN '${YearBegin}-${MonthBegin}-01' AND '${YearBegin}-${MonthBegin}-01'::date + '1 month'::interval - '1 day'::interval
+            AND source_exten = '${User}'
+        ORDER BY date ASC;
+        " > ${FileTemp}
+        echo '<HTML><HEAD><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><TITLE>Détails des commmunications MOIS ANNEE poste USER</TITLE></HEAD><style>table { border-collapse: collapse; width: 50%; border: 1px solid #335472; font-size: 100%; } th { height: 20px; border: 1px solid white; background-color: #335472; color: white; } td { padding: 3px; border: 1px solid #335472; }</style> <BODY> <IMG SRC=logomail.png alt="logo" title="logo"> <div style="text-align:right"> Iris-Network<br/> 18, rue de la prairie<br/> 44390 Casson<br/> </div> <br/> <br/> <br/> <br/> <h1><div style="text-align:center;"><FONT color="#335472">Détail des communications MOIS ANNEE poste USER</FONT></div></h1><div> <table> <tr> <th>date</th> <th>destinataire</th> <th>durée</th> <th>montant</th> </tr>' > ${FactureTemp/.html/}${User}.html
+        FLINES=( ${(f)mapfile[${FileTemp}]} )
+        for ITEM in $FLINES ; do
+            Date=${ITEM[(ws:|:)1][(ws:.:)1]}
+            Destinataire=${ITEM[(ws:|:)2]}
+            Duration=${ITEM[(ws:|:)3][(ws:.:)1]}
+            Cost=${ITEM[(ws:|:)4]}
+            # On écrit le tableau HTML
+            cat >> ${FactureTemp/.html/}${User}.html << EOF
+            <tr>
+                <td>${Date}</td>
+                <td>${Destinataire[1,-4]}XXX</td>
+                <td>${Duration}</td>
+                <td>${Cost} €</td>
+            </tr
+EOF
+        done
+        # On finit le tableau
+        echo '</table> </div> </BODY> </HTML>' >> ${FactureTemp/.html/}${User}.html
+        # On met à jour les infos
+        sed -i "s/ANNEE/${YearBegin}/g" ${FactureTemp/.html/}${User}.html
+        sed -i "s/MOIS/${NomMois}/g" ${FactureTemp/.html/}${User}.html
+        sed -i "s/USER/${User}/g" ${FactureTemp/.html/}${User}.html
+        xhtml2pdf ${FactureTemp/.html/}${User}.html ${FactureTemp/.html/}${User}.pdf > /dev/null
+    done
+
+
+# On les concatène
+pdftk ${FactureTemp/html/pdf} ${FactureTemp/.html/}*.pdf cat output /tmp/Facturation_${NomMois}_${YearBegin}.pdf
+
+# On envoi par mail
+mutt -s "Facturation période ${NomMois} ${YearBegin}" -e "set realname=no-reply" -e "set from=no-reply@iris-network.fr" JoliMailNotifie@Domaine.tld -a /tmp/Facturation_${NomMois}_${YearBegin}.pdf
