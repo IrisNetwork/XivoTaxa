@@ -1,0 +1,44 @@
+{
+  "type": "pie",
+  "params": {
+    "addLegend": true,
+    "addTooltip": true,
+    "isDonut": false,
+    "shareYAxis": true,
+    "spyPerPage": 10
+  },
+  "aggs": [
+    {
+      "id": "1",
+      "type": "sum",
+      "schema": "metric",
+      "params": {
+        "field": "duration"
+      }
+    },
+    {
+      "id": "2",
+      "type": "terms",
+      "schema": "segment",
+      "params": {
+        "field": "source_exten",
+        "exclude": {
+          "flags": [
+            "UNIX_LINES"
+          ],
+          "pattern": ""
+        },
+        "include": {
+          "flags": [
+            "UNIX_LINES"
+          ],
+          "pattern": "0.*|anonymous"
+        },
+        "size": 5,
+        "order": "desc",
+        "orderBy": "1"
+      }
+    }
+  ],
+  "listeners": {}
+}

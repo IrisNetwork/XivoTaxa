@@ -1,0 +1,42 @@
+{
+  "filter": [
+    {
+      "meta": {
+        "disabled": true,
+        "index": "jdbc",
+        "key": "query",
+        "negate": false,
+        "value": "source_exten:501"
+      },
+      "query": {
+        "query_string": {
+          "analyze_wildcard": true,
+          "query": "source_exten:501"
+        }
+      }
+    },
+    {
+      "meta": {
+        "disabled": true,
+        "index": "jdbc",
+        "key": "query",
+        "negate": false,
+        "value": "source_exten:502"
+      },
+      "query": {
+        "query_string": {
+          "analyze_wildcard": true,
+          "query": "source_exten:502"
+        }
+      }
+    },
+    {
+      "query": {
+        "query_string": {
+          "analyze_wildcard": true,
+          "query": "*"
+        }
+      }
+    }
+  ]
+}

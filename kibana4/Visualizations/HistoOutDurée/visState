@@ -1,0 +1,48 @@
+{
+  "type": "line",
+  "params": {
+    "shareYAxis": true,
+    "addTooltip": true,
+    "addLegend": true,
+    "defaultYExtents": false
+  },
+  "aggs": [
+    {
+      "id": "1",
+      "type": "sum",
+      "schema": "metric",
+      "params": {
+        "field": "duration"
+      }
+    },
+    {
+      "id": "2",
+      "type": "terms",
+      "schema": "group",
+      "params": {
+        "field": "source_exten",
+        "exclude": {
+          "pattern": "0.*|anonymous"
+        },
+        "include": {
+          "pattern": ""
+        },
+        "size": 5,
+        "order": "desc",
+        "orderBy": "1"
+      }
+    },
+    {
+      "id": "3",
+      "type": "date_histogram",
+      "schema": "segment",
+      "params": {
+        "field": "date",
+        "interval": "auto",
+        "min_doc_count": 1,
+        "extended_bounds": {}
+      }
+    }
+  ],
+  "listeners": {}
+}

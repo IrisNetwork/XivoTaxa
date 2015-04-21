@@ -1,0 +1,42 @@
+[
+  {
+    "col": 5,
+    "id": "DurationIn",
+    "row": 1,
+    "size_x": 4,
+    "size_y": 3,
+    "type": "visualization"
+  },
+  {
+    "col": 1,
+    "id": "DurationOut",
+    "row": 1,
+    "size_x": 4,
+    "size_y": 3,
+    "type": "visualization"
+  },
+  {
+    "col": 9,
+    "id": "ValoOut",
+    "row": 1,
+    "size_x": 4,
+    "size_y": 3,
+    "type": "visualization"
+  },
+  {
+    "col": 1,
+    "id": "HistoOutDurée",
+    "row": 4,
+    "size_x": 12,
+    "size_y": 2,
+    "type": "visualization"
+  },
+  {
+    "col": 1,
+    "id": "HistoOutValo",
+    "row": 6,
+    "size_x": 12,
+    "size_y": 2,
+    "type": "visualization"
+  }
+]
