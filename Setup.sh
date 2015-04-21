@@ -46,4 +46,8 @@ curl -XPUT 'localhost:9200/_river/my_jdbc_river/_meta' -d '{
 ### curl -XDELETE 'localhost:9200/_river/my_jdbc_river/'
 
 # Mise en place du cron de valorisation
-cp TaxaXivo /etc/cron.hourly/
+cp TaxaXivo  /etc/cron.hourly/
+## Et de celui de génération de facture
+cp GenerateMonthlyBill /etc/cron.monthly/
+
+chmod +x /etc/cron.hourly/TaxaXivo /etc/cron.monthly/GenerateMonthlyBill
