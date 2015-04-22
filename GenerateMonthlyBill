@@ -64,8 +64,8 @@ readonly FileTemp=/tmp/${RANDOM}GenerateFacture
 readonly FactureTemp=/tmp/${RANDOM}Facture.html
 readonly FactureAllTrame=/usr/share/xivo-web-interface/www/factureAllTrame.html
 
-echo '<HTML><HEAD><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><TITLE>Détails des commmunications MOIS ANNEE</TITLE></HEAD><style>table { border-collapse: collapse; width: 50%; border: 1px solid #335472; } th { height: 20px; border: 1px solid white; background-color: #335472; color: white; } td { padding: 3px; border: 1px solid #335472; }</style> <BODY> <IMG SRC=logomail.png alt="logo" title="logo"> <div style="text-align:right"> Iris-Network<br/> 18, rue de la prairie<br/> 44390 Casson<br/> </div> <br/> <br/> <br/> <br/> <h1><div style="text-align:center;"><FONT color="#335472">Détail des communications MOIS ANNEE</FONT></div></h1> <h2>Coût total : COUTTOTAL€</h2> <h2>Détail</h2> <div> <table> <tr> <th>usager</th> <th>nombre appels extérieurs décrochés</th> <th>durée</th> <th>montant</th> </tr>' > ${FactureTemp}
-cp logomail.png $(dirname ${FactureTemp})
+echo '<HTML><HEAD><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><TITLE>Détails des commmunications MOIS ANNEE</TITLE></HEAD><style>table { border-collapse: collapse; width: 50%; border: 1px solid #335472; } th { height: 20px; border: 1px solid white; background-color: #335472; color: white; } td { padding: 3px; border: 1px solid #335472; }</style> <BODY> <IMG SRC=logo.png alt="logo" title="logo"> <div style="text-align:right"> Iris-Network<br/> 18, rue de la prairie<br/> 44390 Casson<br/> </div> <br/> <br/> <br/> <br/> <h1><div style="text-align:center;"><FONT color="#335472">Détail des communications MOIS ANNEE</FONT></div></h1> <h2>Coût total : COUTTOTAL€</h2> <h2>Détail</h2> <div> <table> <tr> <th>usager</th> <th>nombre appels extérieurs décrochés</th> <th>durée</th> <th>montant</th> </tr>' > ${FactureTemp}
+cp img/logo.png $(dirname ${FactureTemp})
 
 ###
 # Facture globale
@@ -141,7 +141,7 @@ for User in $(sudo -u postgres psql -A -t asterisk -c "
             AND source_exten = '${User}'
         ORDER BY date ASC;
         " > ${FileTemp}
-        echo '<HTML><HEAD><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><TITLE>Détails des commmunications MOIS ANNEE poste USER</TITLE></HEAD><style>table { border-collapse: collapse; width: 50%; border: 1px solid #335472; font-size: 100%; } th { height: 20px; border: 1px solid white; background-color: #335472; color: white; } td { padding: 3px; border: 1px solid #335472; }</style> <BODY> <IMG SRC=logomail.png alt="logo" title="logo"> <div style="text-align:right"> Iris-Network<br/> 18, rue de la prairie<br/> 44390 Casson<br/> </div> <br/> <br/> <br/> <br/> <h1><div style="text-align:center;"><FONT color="#335472">Détail des communications MOIS ANNEE poste USER</FONT></div></h1><div> <table> <tr> <th>date</th> <th>destinataire</th> <th>durée</th> <th>montant</th> </tr>' > ${FactureTemp/.html/}${User}.html
+        echo '<HTML><HEAD><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><TITLE>Détails des commmunications MOIS ANNEE poste USER</TITLE></HEAD><style>table { border-collapse: collapse; width: 50%; border: 1px solid #335472; font-size: 100%; } th { height: 20px; border: 1px solid white; background-color: #335472; color: white; } td { padding: 3px; border: 1px solid #335472; }</style> <BODY> <IMG SRC=logo.png alt="logo" title="logo"> <div style="text-align:right"> Iris-Network<br/> 18, rue de la prairie<br/> 44390 Casson<br/> </div> <br/> <br/> <br/> <br/> <h1><div style="text-align:center;"><FONT color="#335472">Détail des communications MOIS ANNEE poste USER</FONT></div></h1><div> <table> <tr> <th>date</th> <th>destinataire</th> <th>durée</th> <th>montant</th> </tr>' > ${FactureTemp/.html/}${User}.html
         FLINES=( ${(f)mapfile[${FileTemp}]} )
         for ITEM in $FLINES ; do
             Date=${ITEM[(ws:|:)1][(ws:.:)1]}
