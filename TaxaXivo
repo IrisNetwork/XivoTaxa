@@ -39,6 +39,11 @@ sudo -u postgres psql -A -t asterisk -c "\
             AND source_exten != 'anonymous';
     " > ${FileTemp}
 
+if [[ ! -s ${FileTemp} ]]; then
+    # Pas de taxa à traiter
+    exit 0
+fi
+
 FLINES=( ${(f)mapfile[${FileTemp}]} )
 for ITEM in $FLINES
 do
