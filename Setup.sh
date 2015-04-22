@@ -44,7 +44,7 @@ sudo -u postgres psql -A -t asterisk -c "\
         interval3 smallint,
         duration3 smallint
     );
-    CREATE INDEX idx_prefix ON ovh_perso USING gist(prefix);
+    CREATE INDEX idx_prefix ON ovh_perso USING gist(area);
     "
 
 # River
