@@ -37,7 +37,7 @@ CallLength=0
 GetTaxaInfo () {
     # $1 numéro
     # $2 le champ à retourner
-    psql -A -t asterisk -c "\
+    sudo -u postgres psql -A -t asterisk -c "\
         SELECT ${2}
             FROM ${Chan}
             WHERE area @> '${1}'
@@ -51,11 +51,11 @@ GetTaxaInfo () {
 ## -A avoir le format unaligned (ie Valeur1|Valeur2 et non Valeur1   |    Valeur2)
 ## -t ne pas afficher les en-têtes
 ## le ceil est là pour arrondir à la seconde supérieure
-MaxId=$(psql -A -t asterisk -c "\
+MaxId=$(sudo -u postgres psql -A -t asterisk -c "\
     SELECT MAX(id)
         FROM call_log;
     ")
-psql -A -t asterisk -c "\
+sudo -u postgres psql -A -t asterisk -c "\
     SELECT id,destination_exten,destination_line_identity,CEIL(EXTRACT(EPOCH FROM duration)) AS duration
         FROM call_log
         WHERE valo IS null
@@ -88,13 +88,13 @@ do
         CallLength=$((${CallLength}-${ValoLength}))
         CostId=$((${CostId}+1))
     done
-    psql -q -A -t asterisk -c "\
+    sudo -u postgres psql -q -A -t asterisk -c "\
         UPDATE call_log
             SET valo = '${Cost}' WHERE id = '${Id}';
     "
 done
 # On marque comme traitée les taxa
-psql -q -A -t asterisk -c "\
+sudo -u postgres psql -q -A -t asterisk -c "\
     UPDATE call_log
         SET stats = 1 WHERE id <= '${MaxId}';
 "
