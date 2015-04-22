@@ -4,7 +4,7 @@ wget --no-check-certificate -qO - https://packages.elasticsearch.org/GPG-KEY-ela
 ### Depot
 echo "deb http://packages.elasticsearch.org/elasticsearch/1.5/debian stable main" | sudo tee -a /etc/apt/sources.list
 ### Paquet
-aptitude install elasticsearch openjdk-7-jre
+aptitude install elasticsearch openjdk-7-jre postgresql-9.1-prefix
 
 ## Les plugins
 ### Browser
@@ -19,8 +19,33 @@ chmod 644 ~elasticsearch/plugins/jdbc/*
 update-rc.d elasticsearch defaults 95 10
 ## Et démarrage
 /etc/init.d/elasticsearch start
-## ES est long à se lancer ...
+## ES est long à démarrer
 sleep 30
+
+# 0 - CDR non traitée
+# 1 - CDR valorisée
+# 2 - CDR mise dans ES
+sudo -u postgres psql -A -t asterisk -c "\
+    ALTER TABLE call_log ADD valo NUMERIC(6, 2);
+    ALTER TABLE call_log ADD stats smallint default 0;
+    CREATE EXTENSION prefix;
+    "
+# Exemple pour la table de taxation du trunk
+sudo -u postgres psql -A -t asterisk -c "\
+    CREATE TABLE ovh_perso (
+        area prefix_range primary key,
+        cost1 NUMERIC(6, 2),
+        interval1 smallint DEFAULT '1',
+        duration1 smallint DEFAULT '32767',
+        cost2 NUMERIC(6, 2),
+        interval2 smallint,
+        duration2 smallint,
+        cost3 NUMERIC(6, 2),
+        interval3 smallint,
+        duration3 smallint
+    );
+    CREATE INDEX idx_prefix ON ovh_perso USING gist(prefix);
+    "
 
 # River
 ## La lancer
