@@ -12,14 +12,15 @@ aptitude install elasticsearch openjdk-7-jre
 ### Connecteur SGBD
 /usr/share/elasticsearch/bin/plugin --install jdbc --url http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-river-jdbc/1.5.0.2/elasticsearch-river-jdbc-1.5.0.2-plugin.zip
 ### Connecteur PG
-cd ~elasticsearch/plugins/jdbc
-wget --no-check-certificate https://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar
-chmod 644 *
+wget --no-check-certificate https://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar -O ~elasticsearch/plugins/jdbc/postgresql-9.1-903.jdbc4.jar
+chmod 644 ~elasticsearch/plugins/jdbc/*
 
 ## Demarrage auto
 update-rc.d elasticsearch defaults 95 10
 ## Et démarrage
 /etc/init.d/elasticsearch start
+## ES est long à se lancer ...
+sleep 30
 
 # River
 ## La lancer
