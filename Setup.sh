@@ -4,7 +4,7 @@ wget --no-check-certificate -qO - https://packages.elasticsearch.org/GPG-KEY-ela
 ### Depot
 echo "deb http://packages.elasticsearch.org/elasticsearch/1.5/debian stable main" | sudo tee -a /etc/apt/sources.list
 ### Paquet
-aptitude install elasticsearch openjdk-7-jre postgresql-9.1-prefix
+aptitude install elasticsearch openjdk-7-jre postgresql-9.1-prefix python-pisa
 
 ## Les plugins
 ### Browser
