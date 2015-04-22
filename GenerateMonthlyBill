@@ -72,7 +72,7 @@ cp logomail.png $(dirname ${FactureTemp})
 ###
 
 # On récupère Nombre Appel, Coût, durée totale par user
-psql -A -t asterisk -c "
+sudo -u postgres psql -A -t asterisk -c "
     SELECT source_exten AS poste,
         COUNT(valo) AS \"nombre d'appel\",
         SUM(duration) AS durée,
@@ -83,7 +83,7 @@ psql -A -t asterisk -c "
     group by source_exten;
     " > ${FileTemp}
 
-CoutTotal=$( psql -A -t asterisk -c "
+CoutTotal=$(sudo -u postgres psql -A -t asterisk -c "
     SELECT SUM(valo) AS coût
     FROM call_log
     WHERE valo IS NOT NULL
@@ -123,14 +123,14 @@ xhtml2pdf ${FactureTemp} ${FactureTemp/html/pdf} >/dev/null
 ###
 # Facture par user
 ###
-for User in $(psql -A -t asterisk -c "
+for User in $(sudo -u postgres psql -A -t asterisk -c "
     SELECT DISTINCT source_exten
     FROM call_log
     WHERE valo IS NOT NULL
         AND date BETWEEN '${YearBegin}-${MonthBegin}-01' AND '${YearBegin}-${MonthBegin}-01'::date + '1 month'::interval - '1 day'::interval
     ORDER BY source_exten;
     ") ; do
-        psql -A -t asterisk -c "
+        sudo -u postgres psql -A -t asterisk -c "
         SELECT date,
             destination_exten AS destination,
             duration AS durée,
